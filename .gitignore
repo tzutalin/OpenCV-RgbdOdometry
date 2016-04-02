@@ -3,3 +3,8 @@
 *.so
 build
 prebuilt
+*.out
+cscope*
+tags
+.subvimrc
+*.pyc

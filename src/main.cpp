@@ -180,8 +180,10 @@ void readAssocTextfile(std::string filename,
 }
 
 int main(int argc, char** argv) {
+  std::cerr << "test opencv rgbd, start loading assoc.txt" << std::endl;
   std::vector<std::string> inputRGBPaths, inputDepthPaths;
   readAssocTextfile("assoc.txt", inputRGBPaths, inputDepthPaths);
+  std::cerr << "test opencv rgbd, end loading assoc.txt" << std::endl;
   if (testRGBD(inputRGBPaths, inputDepthPaths)) {
     return 0;
   }
