@@ -21,31 +21,35 @@ using namespace std;
 using namespace cv;
 using namespace std;
 
+// This is for Kinect or Xtion
 #define FOCUS_LENGTH 525.0
 #define CX 319.5
 #define CY 239.5
 
-const float WINDOW_SIZE = 1000;
+const float MIN_DEPTH = 0.8f;        // in meters
+const float MAX_DEPTH = 4.0f;        // in meters
+const float MAX_DEPTH_DIFF = 0.08f;  // in meters
+const float MAX_POINTS_PART = 0.09f;
 
-const float minDepth = 0.6f;  //in meters
-const float maxDepth = 2.8f;  //in meters
-const float maxDepthDiff = 0.08f;  //in meters
-const float max_points_part = 0.09f;
+// This is for TUM dataset
+const float PIXEL_TO_METER_SCALEFACTOR = 0.0002;
+
+// Visualize trajectroy
+const float WINDOW_SIZE = 500;
+const float VISUALIZATION_SCALE_FACTOR = 100.0f;
 
 using namespace cv;
 using namespace std;
 
 bool testRGBD(const std::vector<std::string>& inputRGBPaths,
               const std::vector<std::string>& inputDepthPaths) {
-  namedWindow("RGBD Camera", WINDOW_AUTOSIZE);  // Create a window for display.
-  namedWindow("Normalized RGBD Depth", WINDOW_AUTOSIZE);  // Create a window for display.
-  namedWindow("RGBD Trajectory", WINDOW_AUTOSIZE);  // Create a window for display.
+  namedWindow("RGBD Color", WINDOW_AUTOSIZE);
+  namedWindow("Normalized RGBD Depth", WINDOW_AUTOSIZE);
+  namedWindow("RGBD Trajectory", WINDOW_AUTOSIZE);
   Mat traj = Mat::zeros(WINDOW_SIZE, WINDOW_SIZE, CV_8UC3);
 
-  std::shared_ptr<rgbd::Odometry> odom;;
+  std::shared_ptr<rgbd::Odometry> odom;
 
-  const float scale = 1.0f;
-  const float visal_scale = 50.0f;
   char text[100];
   int fontFace = FONT_HERSHEY_PLAIN;
   double fontScale = 1;
@@ -54,7 +58,7 @@ bool testRGBD(const std::vector<std::string>& inputRGBPaths,
 
   Mat rotationMatrix, tranlslationMatrix;
 
-  float vals[] = { FOCUS_LENGTH, 0., CX, 0., FOCUS_LENGTH, CY, 0., 0., 1. };
+  float vals[] = {FOCUS_LENGTH, 0., CX, 0., FOCUS_LENGTH, CY, 0., 0., 1.};
 
   const Mat cameraMatrix = Mat(3, 3, CV_32FC1, vals);
 
@@ -72,37 +76,40 @@ bool testRGBD(const std::vector<std::string>& inputRGBPaths,
     Mat colorImage1 = imread(rgb1Path);
     Mat depth1 = imread(depth1Path, IMREAD_UNCHANGED);
 
-    if (colorImage0.empty() || depth0.empty() || colorImage1.empty()
-        || depth1.empty()) {
+    if (colorImage0.empty() || depth0.empty() || colorImage1.empty() ||
+        depth1.empty()) {
+      std::cerr << "Not correct RGB-D images";
       return -1;
     }
 
-    Mat grayImage0, grayImage1, depthFlt0, depthFlt1/*in meters*/;
+    Mat grayImage0, grayImage1, depthFlt0, depthFlt1 /*in meters*/;
     cvtColor(colorImage0, grayImage0, COLOR_BGR2GRAY);
     cvtColor(colorImage1, grayImage1, COLOR_BGR2GRAY);
-    depth0.convertTo(depthFlt0, CV_32FC1, 0.001f);
-    depth1.convertTo(depthFlt1, CV_32FC1, 0.001f);
+    depth0.convertTo(depthFlt0, CV_32FC1, PIXEL_TO_METER_SCALEFACTOR);
+    depth1.convertTo(depthFlt1, CV_32FC1, PIXEL_TO_METER_SCALEFACTOR);
     // Read images end
 
     Mat rigidTransform;
 
-    vector<int> iterCounts(4);
-    iterCounts[0] = 7;
-    iterCounts[1] = 7;
-    iterCounts[2] = 7;
-    iterCounts[3] = 10;
-
-    vector<float> minGradMagnitudes(4);
-    minGradMagnitudes[0] = 12;
-    minGradMagnitudes[1] = 5;
-    minGradMagnitudes[2] = 3;
-    minGradMagnitudes[3] = 1;
-
     if (!odom) {
-      odom = std::make_shared<rgbd::RgbdOdometry>(cameraMatrix, minDepth, maxDepth,
-                                                  maxDepthDiff, iterCounts, minGradMagnitudes,
-                                                  max_points_part,
-                                                  rgbd::Odometry::RIGID_BODY_MOTION);
+      vector<int> iterCounts(4);
+      iterCounts[0] = 7;
+      iterCounts[1] = 7;
+      iterCounts[2] = 7;
+      iterCounts[3] = 10;
+
+      vector<float> minGradMagnitudes(4);
+      minGradMagnitudes[0] = 12;
+      minGradMagnitudes[1] = 5;
+      minGradMagnitudes[2] = 3;
+      minGradMagnitudes[3] = 1;
+
+      odom = std::make_shared<rgbd::RgbdOdometry>(
+          cameraMatrix, MIN_DEPTH, MAX_DEPTH, MAX_DEPTH_DIFF, iterCounts,
+          minGradMagnitudes, MAX_POINTS_PART,
+          rgbd::Odometry::RIGID_BODY_MOTION);
+
+      std::cerr << "Init tracker" << std::endl;
     }
 
     bool isSuccess = odom->compute(grayImage0, depthFlt0, Mat(), grayImage1,
@@ -119,36 +126,40 @@ bool testRGBD(const std::vector<std::string>& inputRGBPaths,
         continue;
       }
 
-      if ((scale > 0.1)) {
-        tranlslationMatrix = tranlslationMatrix
-            + scale * (rotationMatrix * translateMat);
-        rotationMatrix = rotationMat * rotationMatrix;
-        std::cout << "tf:" << tranlslationMatrix << std::endl;
+	  // Update Rt
+      tranlslationMatrix = tranlslationMatrix + (rotationMatrix * translateMat);
+      rotationMatrix = rotationMat * rotationMatrix;
+    }
+
+    // Visualize traj
+    if (isFirst == false) {
+      int x =
+          int(VISUALIZATION_SCALE_FACTOR * tranlslationMatrix.at<double>(0)) +
+          WINDOW_SIZE / 2;
+      int y =
+          int(VISUALIZATION_SCALE_FACTOR * tranlslationMatrix.at<double>(2)) +
+          WINDOW_SIZE / 2;
+
+      circle(traj, Point(x, y), 1, CV_RGB(255, 0, 0), 2);
+      rectangle(traj, Point(10, 30), Point(550, 50), CV_RGB(0, 0, 0),
+                CV_FILLED);
+      if (isSuccess == true) {
+        sprintf(text, "Coordinates: x = %04fm y = %04fm z = %04fm",
+                tranlslationMatrix.at<double>(0),
+                tranlslationMatrix.at<double>(1),
+                tranlslationMatrix.at<double>(2));
+      } else {
+        sprintf(text, "Fail to compute odometry");
       }
-    }
 
-    int x = int(visal_scale * tranlslationMatrix.at<double>(0))
-        + WINDOW_SIZE / 2;
-    int y = int(visal_scale * tranlslationMatrix.at<double>(2))
-        + WINDOW_SIZE / 2;
-
-    circle(traj, Point(x, y), 1, CV_RGB(255, 0, 0), 2);
-    rectangle(traj, Point(10, 30), Point(550, 50), CV_RGB(0, 0, 0), CV_FILLED);
-    if (isSuccess == true) {
-      sprintf(text, "Coordinates: x = %04fm y = %04fm z = %04fm",
-              tranlslationMatrix.at<double>(0),
-              tranlslationMatrix.at<double>(1),
-              tranlslationMatrix.at<double>(2));
-    } else {
-      sprintf(text, "Fail to compute odometry");
+      putText(traj, text, textOrg, fontFace, fontScale, Scalar::all(255),
+              thickness, 8);
     }
-    putText(traj, text, textOrg, fontFace, fontScale, Scalar::all(255),
-            thickness, 8);
     imshow("RGBD Trajectory", traj);
-    imshow("RGBD Camera", grayImage1);
+    imshow("RGBD Color", grayImage1);
 
     cv::Mat normalizeDepth;
-    depthFlt1.convertTo(normalizeDepth, CV_8UC1, 255.0 / maxDepth);
+    depthFlt1.convertTo(normalizeDepth, CV_8UC1, 255.0 / MAX_DEPTH);
     imshow("Normalized RGBD Depth", normalizeDepth);
 
     const Mat distCoeff(1, 5, CV_32FC1, Scalar(0));
