@@ -43,3 +43,5 @@ Create assoc.txt having synchronized rgb and depth images
 
 ### Demo video
 [![Demo video](https://j.gifs.com/0RDJgK.gif)](https://www.youtube.com/watch?v=NS2L7_uHTAo&feature=youtu.be)
+
+[![Demo video](https://j.gifs.com/lYEqx5.gif)](https://www.youtube.com/watch?v=NS2L7_uHTAo&feature=youtu.be)
