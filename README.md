@@ -1,4 +1,4 @@
-#Demo Opencv-RgbdOdometry
+# RGBD-Odometry (Visual Odometry based RGB-D images)
 
 ###Requirement
 [OpenCV > 3.1](http://tzutalin.blogspot.tw/2016/01/installing-opencv-310-and-contrib-lib.html)
@@ -34,4 +34,12 @@ Start building
 Start running
 `$ cd [Opencv-RgbdOdometry]`
 
+`$ cd rgbd_dataset_freiburg2_pioneer_slam3`
+
+Create assoc.txt having synchronized rgb and depth images
+`$ python associate.py rgb.txt depth.txt > assoc.txt`
+
 `$ cd rgbd_dataset_freiburg2_pioneer_slam3; ../build/rgbd-odometry`
+
+### Demo video
+[![Demo video](https://j.gifs.com/0RDJgK.gif)](https://www.youtube.com/watch?v=NS2L7_uHTAo&feature=youtu.be)

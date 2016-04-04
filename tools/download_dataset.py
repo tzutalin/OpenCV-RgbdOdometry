@@ -44,7 +44,7 @@ def download_file(url, desc=None, renamed_file=None):
         file_size = None
         if meta_length:
             file_size = int(meta_length[0])
-        print("Downloading: {0} Bytes: {1}".format(url, file_size))
+            print("Downloading: {0} Bytes: {1}".format(url, file_size))
 
         file_size_dl = 0
         block_sz = 8192
@@ -59,12 +59,13 @@ def download_file(url, desc=None, renamed_file=None):
             status = "{0:16}".format(file_size_dl)
             if file_size:
                 status += "   [{0:6.2f}%]".format(file_size_dl * 100 / file_size)
-            status += chr(13)
+                status += chr(13)
 
     return filename
 
 if __name__ == '__main__':
-    filename = 'rgbd_dataset_freiburg2_pioneer_slam3.tar'
-	download_file('http://vision.in.tum.de/rgbd/dataset/freiburg2/rgbd_dataset_freiburg2_pioneer_slam3.tgz', renamed_file = filename)
-    untar(filename)
+    fname='rgbd_dataset_freiburg2_pioneer_slam3.tar'
+    # download_file('http://vision.in.tum.de/rgbd/dataset/freiburg2/rgbd_dataset_freiburg2_pioneer_slam3.tgz', None, fname)
+    # untar(fname)
+    download_file('https://svncvpr.in.tum.de/cvpr-ros-pkg/trunk/rgbd_benchmark/rgbd_benchmark_tools/src/rgbd_benchmark_tools/associate.py', None, os.path.join(os.path.splitext(fname)[0], 'associate.py'))
 
