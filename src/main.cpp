@@ -35,8 +35,8 @@ const float MAX_POINTS_PART = 0.09f;
 const float PIXEL_TO_METER_SCALEFACTOR = 0.0002;
 
 // Visualize trajectroy
-const float WINDOW_SIZE = 500;
-const float VISUALIZATION_SCALE_FACTOR = 100.0f;
+const float WINDOW_SIZE = 800;
+const float VISUALIZATION_SCALE_FACTOR = 60.0f;
 
 using namespace cv;
 using namespace std;

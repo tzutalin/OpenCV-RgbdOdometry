@@ -23,6 +23,15 @@ You should change camera paramerts at the top of [main.cpp](https://github.com/t
 ```
 
 ### Build & Run
-`$ mkdir -p build;cd build`
+For the first time, you should download the dataset. YOu can use the below command
+`$ python tools/download_dataset.py`
+
+Start building
+`$ mkdir -p build; cd build`
+
 `$ cmake ..; make`
-`$ ./rgbd-odometry`
+
+Start running
+`$ cd [Opencv-RgbdOdometry]`
+
+`$ cd rgbd_dataset_freiburg2_pioneer_slam3; ../build/rgbd-odometry`
