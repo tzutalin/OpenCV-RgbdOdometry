@@ -23,23 +23,27 @@ You should change camera paramerts at the top of [main.cpp](https://github.com/t
 ```
 
 ### Build & Run
-For the first time, you should download the dataset. YOu can use the below command
+For the first time, you should download the dataset. You can use the below command
+
 `$ python tools/download_dataset.py`
 
 Start building
+
 `$ mkdir -p build; cd build`
 
 `$ cmake ..; make`
 
 Start running
+
 `$ cd [Opencv-RgbdOdometry]`
+
+Create assoc.txt having synchronized rgb and depth images
 
 `$ cd rgbd_dataset_freiburg2_pioneer_slam3`
 
-Create assoc.txt having synchronized rgb and depth images
 `$ python associate.py rgb.txt depth.txt > assoc.txt`
 
-`$ cd rgbd_dataset_freiburg2_pioneer_slam3; ../build/rgbd-odometry`
+`$ ../build/rgbd-odometry`
 
 ### Demo video
 [![Demo video](https://j.gifs.com/0RDJgK.gif)](https://www.youtube.com/watch?v=NS2L7_uHTAo&feature=youtu.be)
