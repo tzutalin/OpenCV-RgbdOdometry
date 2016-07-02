@@ -1,7 +1,7 @@
 # RGBD-Odometry (Visual Odometry based RGB-D images)
 
 ###Requirement
-[OpenCV > 3.1](http://tzutalin.blogspot.tw/2016/01/installing-opencv-310-and-contrib-lib.html)
+[OpenCV >= 3.0](http://tzutalin.blogspot.tw/2016/01/installing-opencv-310-and-contrib-lib.html)
 
 ### Setup
 Download RGB-D dataset from [TUM](http://vision.in.tum.de/data/datasets) or [KTTI](http://www.cvlibs.net/datasets/kitti/eval_odometry.php)
