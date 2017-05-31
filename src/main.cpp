@@ -3,7 +3,7 @@
 // Author      : Tzutalin
 // Version     :
 // Copyright   : Tzutalin
-// Description : Demo Opencv-RgbdOdometry
+// Description : Demo Opencv-RgbdOdometry(http://docs.opencv.org/3.2.0/df/ddc/classcv_1_1rgbd_1_1Odometry.html)
 //============================================================================
 
 #include <fstream>
